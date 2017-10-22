@@ -1,0 +1,217 @@
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.List;
+
+public class GetInfo {
+
+    File file;
+    WebDriver driver;
+
+    static ReadFile readFile = new ReadFile();
+    static List<String> pokemonList;
+
+
+    String name;
+    String japaneseName;
+    String info;
+    String pokemonNo;
+    String type;
+    String description1;
+    String description2;
+    String description3;
+    String description4;
+    String description5;
+    String abilities;
+    String weight;
+    String height;
+    String img;
+
+
+    public static void main(String[]args)throws Exception{
+        GetInfo getInfo = new GetInfo();
+
+        readFile.read("files/allPokemonLinks.txt");
+        pokemonList = readFile.textLine;
+
+        getInfo.initializeDriver();
+
+        int i = 0;
+        while(i < pokemonList.size()) {
+            try {
+                //getInfo.getPokemonInfo(i);
+                i++;
+            }catch (Exception e){}
+        }
+
+
+    }
+
+    void initializeDriver()throws Exception {
+        file = new File("lib/chromedriver.exe");
+        System.setProperty("webdriver.chrome.driver", file.getAbsolutePath());
+        driver = new ChromeDriver();
+        System.out.println();
+
+    }
+
+    void getPokemonInfo(int i) throws Exception{
+        driver.get(pokemonList.get(i));
+
+        name = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[1]/td/table/tbody/tr[1]/td/table/tbody/tr/td[1]/big/big/b")).getText();
+        pokemonNo = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[1]/td/table/tbody/tr[1]/th/big/big/a/span")).getText();
+        type = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[2]/td/table/tbody/tr/td[1]")).getText().replace("\n"," ");
+        japaneseName = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[1]/td/table/tbody/tr[1]/td/table/tbody/tr/td[2]")).getText().replace("\n"," ");
+        info = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[1]/td/table/tbody/tr[1]/td/table/tbody/tr/td[1]/a/span")).getText();
+
+        img = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[1]/td/table/tbody/tr[2]/td/table/tbody/tr[1]/td/a/img")).getAttribute("src");
+        info = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[1]/td/table/tbody/tr[1]/td/table/tbody/tr/td[1]/a/span")).getText();
+        abilities = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[3]/td/table/tbody/tr/td[1]/a/span")).getText().replace("\n"," ");
+        try{
+            abilities = abilities + " " + driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[3]/td/table/tbody/tr/td[4]/a/span")).getText().replace("\n"," ");
+        }catch (Exception e){}
+
+        try{
+            abilities = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[2]/td[2]/table/tbody/tr/td[1]/a/span")).getText();
+        }catch (Exception e){}
+
+        getDescription();
+        getWeight();
+
+        System.out.println("name : " + name);
+        System.out.println("japaneseName : " + japaneseName);
+        System.out.println("info : " + info);
+        System.out.println("pokemonNo : " + pokemonNo);
+        System.out.println("type : " + type);
+        System.out.println("description : " + description1 + "\n" + description2 + "\n" + description3 + "\n" + description4 + "\n" + description5);
+        System.out.println("abilities : " + abilities);
+        System.out.println("weight : " + weight);
+        System.out.println("height : " + height);
+        System.out.println("img : " + img);
+        System.out.println();
+
+        saveInfo();
+
+    }
+
+    void getDescription(){
+        description1 = driver.findElement(By.xpath(".//*[@id='mw-content-text']/p[1]")).getText().replace("\"","");
+
+        try{
+            description2 = driver.findElement(By.xpath(".//*[@id='mw-content-text']/p[2]")).getText().replace("\"","");
+        }catch (Exception e){}
+
+        try{
+            description3 = driver.findElement(By.xpath(".//*[@id='mw-content-text']/p[3]")).getText().replace("\"","");
+        }catch (Exception e){}
+
+        try{
+            description4 = driver.findElement(By.xpath(".//*[@id='mw-content-text']/p[4]")).getText().replace("\"","");
+        }catch (Exception e){}
+
+        try{
+            description5 = driver.findElement(By.xpath(".//*[@id='mw-content-text']/p[5]")).getText().replace("\"","");
+        }catch (Exception e){}
+    }
+
+    void getWeight(){
+        try {
+            weight = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[5]/td[2]/table/tbody/tr[1]/td[1]")).getText();
+            height = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[5]/td[1]/table/tbody/tr[1]/td[1]")).getText().replace("\"","");
+        }catch (Exception e){}
+
+        try {
+            weight = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[6]/td[2]/table/tbody/tr[1]/td[1]")).getText();
+            height = driver.findElement(By.xpath(".//*[@id='mw-content-text']/table[2]/tbody/tr[6]/td[1]/table/tbody/tr[1]/td[1]")).getText().replace("\"","");
+        }catch (Exception e){}
+
+
+    }
+
+    void saveInfo() throws Exception{
+        File file = new File("files/pokemonInfo.csv");
+        FileWriter fw = new FileWriter(file,true);
+        BufferedWriter writer = new BufferedWriter(fw);
+
+
+        writer.append("\n");
+        writer.append("\"" + pokemonNo + "\",");
+        writer.append("\"" + name + "\",");
+        writer.append("\"" + japaneseName + "\",");
+        writer.append("\"" + info + "\",");
+        writer.append("\"" + img + "\",");
+        writer.append("\"" + type + "\",");
+        writer.append("\"" + abilities + "\",");
+        writer.append("\"" + weight + "\",");
+        writer.append("\"" + height + "\",");
+        writer.append("\"" + description1 + "\",");
+        writer.append("\"" + description2 + "\",");
+        writer.append("\"" + description3 + "\",");
+        writer.append("\"" + description4 + "\",");
+        writer.append("\"" + description5 + "\"");
+
+
+        writer.flush();
+        writer.close();
+    }
+
+
+
+
+    //GET POKEMON LIST-------------------------------------------------
+
+
+    void getPokemonLinks() throws Exception{
+        driver.get("https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_National_Pok%C3%A9dex_number");
+
+        List<WebElement> linksElement = driver.findElements(By.tagName("a"));
+        List<String> links = new ArrayList<>();
+        List<String> finalLinks = new ArrayList<>();
+
+        System.out.println(linksElement.size());
+
+        for(int i = 0; i < linksElement.size(); i++){ //linksElement.size()
+            String link = linksElement.get(i).getAttribute("href");
+            links.add(link);
+            System.out.println(link);
+        }
+
+        System.out.println("\n\n\n\n\n");
+
+        for(int i = 0; i < links.size(); i++){
+            try {
+                if (links.get(i).contains("(Pok%C3%A9mon)") && links.get(i-1).contains(links.get(i))) {
+                    System.out.println("link : " + links.get(i));
+                    finalLinks.add(links.get(i));
+                }
+            }catch (Exception e){
+                System.out.println("Skipping...");
+            }
+        }
+
+        saveLinks(finalLinks);
+
+
+    }
+
+    void saveLinks(List linkList) throws Exception{
+        File pokeLinks = new File("files/allPokemonLinks.txt");
+        FileWriter fw = new FileWriter(pokeLinks,false);
+        BufferedWriter writer = new BufferedWriter(fw);
+
+        for(int i = 0; i < linkList.size(); i++){
+            writer.append(linkList.get(i).toString() + "\n");
+        }
+
+        writer.flush();
+        writer.close();
+    }
+
+}
+
